@@ -16,7 +16,7 @@ check: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	Rscript -e "devtools::check()"
  
 build: $(PKG_NAME)_$(PKG_VERSION).tar.gz
-	R CMD INSTALL --build $(PKG_NAME)_$(PKG_VERSION).tar.gz
+	R CMD build --no-build-vignettes .
  
 install: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD INSTALL $(PKG_NAME)_$(PKG_VERSION).tar.gz
