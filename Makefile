@@ -38,3 +38,8 @@ list:
 	@echo $(R_FILES)
 	@echo "Source files:"
 	@echo $(SRC_FILES)
+
+# package has to be installed
+.PHONY: vignettes
+vignettes:
+	Rscript -e "devtools::build_vignettes()"
