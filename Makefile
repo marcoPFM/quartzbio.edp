@@ -7,9 +7,9 @@ PKG_FILES := DESCRIPTION NAMESPACE $(R_FILES) $(SRC_FILES)
  
 .PHONY: tarball install check clean build
  
-tarball: $(PKG_NAME)_$(PKG_VERSION).tar.gz
+tarball:
 $(PKG_NAME)_$(PKG_VERSION).tar.gz: $(PKG_FILES)
-	R CMD build .
+	R CMD build --no-build-vignettes .
  
 check: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD check $(PKG_NAME)_$(PKG_VERSION).tar.gz
@@ -40,6 +40,24 @@ list:
 	@echo $(SRC_FILES)
 
 # package has to be installed
-.PHONY: vignettes
-vignettes:
-	Rscript -e "devtools::build_vignettes()"
+
+PREVIEW=TRUE
+######## functions #######################
+.PHONY: never info
+R=R
+RSCRIPT=Rscript
+r_exec=$(RSCRIPT) --no-save -e '$(1)'
+HTMLVIEWER=xdg-open
+
+# rmd -> html: keep default render/output
+rmd=$(call r_exec, rmarkdown::render("$(1)", quiet = $(QUIET)))
+
+### rule to produce a html from a Rmd
+%.html: %.Rmd never
+	@echo '======== rendering' $$(basename $<) '==>' $$(basename $@) in $$(dirname $@) '====================='
+	@$(call rmd,$<)
+	@if [ -n "$(PREVIEW)" ]; then $(HTMLVIEWER) $@; fi 	# run the viewer iff PREVIEW is not empty 
+
+
+VIGNETTES_RMD_HTML=$(subst Rmd,html,$(wildcard vignettes/[^_]*.Rmd))
+$(VIGNETTES_RMD_HTML):

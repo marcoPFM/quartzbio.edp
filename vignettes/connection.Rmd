@@ -40,10 +40,6 @@ User()
 Vaults()
 ```
 
-
-
-
-
 # Introduction
 
 There are several methods to be connected to a EDP instance.  
@@ -167,6 +163,8 @@ User(conn_corp)
 
 ```
 
+<!-- unset system env to avoid side effects between vignettes -->
 
-
-
+```{r, include = FALSE, echp = FALSE, message = FALSE,warning = FALSE }
+Sys.unsetenv('EDP_PROFILE')
+```
