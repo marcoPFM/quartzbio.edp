@@ -1,7 +1,8 @@
 ---
 title: "Vaults, Files, Datasets and Objects"
-output: rmarkdown::html_vignette
-
+output:
+  rmarkdown::html_vignette:
+    toc: true
 description: |
   describe Vaults, Files, Datasets and other EDP objects.
 vignette: >
@@ -10,23 +11,42 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, include = FALSE, echo = FALSE, message =  FALSE, warning=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-# User
+# TLTR
 
-```{r}
+```{r, tltr}
 library(quartzbio.edp)
-# select an EDP instance using a profile
 Sys.getenv('EDP_PROFILE')
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
 Sys.getenv('EDP_PROFILE')
-# fetch current user info
-get_connection()
+
+vlts <- Vaults()
+u <- User()
+u$first_name
+vme <- Vault_create(paste0('vault_', u$first_name))
+
+Vault(id = vme)
+Folder_create(vme, 'data/cyto')
+Folder_create(vme, 'data/flow')
+Folder_create(vme, 'source/code')
+Folders(vault_id=vme)
+
+delete(vme)
+```
+
+
+# User
+
+```{r user}
+library(quartzbio.edp)
+# select an EDP instance using a profile
+
 u <- User()
 u$first_name
 u$last_name
@@ -39,9 +59,10 @@ u$url
 ```
 
 
+
 # Vaults
 
-```{r}
+```{r, vaults-0}
 library(quartzbio.edp)
 # select an EDP instance using a profile
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
@@ -58,13 +79,193 @@ myV$permissions
 
 ## Vault creation
 
+```{r vaults-1}
+# create a vault
+v <- Vault_create('vault_test_1', description = 'test_1', tags = list('tag1', 'tag2'))
+v$name
+v$full_path
+
+# retrieve a vault by name
+Vault(name = 'vault_test_1')
+
+# retrieve a vault by full_path
+Vault(full_path = v$full_path)
+
+v$description
+v$metadata
+v$tags
+
+# update metadata
+new_name <- 'test_one'
+v2 <- Vault_update(v, 
+      name = new_name, 
+      description = 'barabor', 
+      metadata = list(meta_1 = 'foo'), 
+      storage_class = 'Performance', tags = 'tag_A')
+
+v3 <- update(v2, storage_class = 'Temporary')
+
+```
+
+## Vaults listing, limit and paging
+
+* Vaults are ordered per **locale** "LC_TIME", "us" 
+* Intermediate pages can sized using **limit**
+* **fetch_next** and **fetch_all** use that limit 
 
 
+```{r vaults-2}
+# get the firt two ordered vaults
+vs1 <- Vaults(limit = 2, page = 1)
 
-```{r, include = FALSE, echp = FALSE, message = FALSE,warning = FALSE }
-Sys.unsetenv('EDP_PROFILE')
+# get the the third and fourth vault
+Vaults(limit = 2, page = 2)
+
+# same as above
+vs2 <- fetch_next(vs1)
+vs2
+
+# fetch all remaining vaults by pages of size 2
+all_vlts <- fetch_all(vs1)
+all_vlts_df <- as.data.frame(all_vlts)
+
+# delete vault
+delete(v)
+```
+
+# Folders
+
+```{r folders-1}
+# list all folders in an account
+all_folders <- Folders()
+
+# get first four
+Folders(limit = 4)
+
+# create folder with description and tags
+v1 <- Vault_create('_an_upload',  description = 'upload', tags = list('fake', 'can_be_removed'))
+fdata <- Folder_create(v1, 'data')
+fdata
+
+# CAUTION, no overwritting per default, folders are renamed incrementally
+# a new folder data-1 is created
+Folder_create(v1, 'data')
+
+# create a hierarchy
+Folder_create(v1, 'source/code')
+
+# List folders of a given vault - recursive
+Folders(vault_id = v1)
+
+# List folders using regex on paths - recursive
+Folders(regex = '^/data')
+Folders(regex = 'code$')
+
+# List folders matching paths - recursive
+Folders(query = 'code')
+
+# fetch a a folder from a given vault
+Folder(vault_id = v1, path = 'data')
+
+# fetch a folder with its full.path
+Folder(full_path = fdata$full_path)
+delete(v1)
 ```
 
 
+# Files
+
+## Upload and Download
+
+```{r files-1}
+irisp <- file.path(tempdir(), 'iris.csv')
+write.csv(iris[1:10,], irisp)
+v <- Vault_create('_iris_upload',  description = 'upload', tags = list('iris', 'can_be_removed'))
+vpath <- 'data/iris/v1/iris_10.csv'
+
+# File upload: folder hierarchy is created on the fly
+firis <- File_upload(v, irisp, vpath )
+firis$full_path
+firis$path
+firis$md5
+
+# File download
+File_download(firis, file.path(dirname(irisp), 'iris_10_download.csv')) 
+dir(dirname(irisp), 'iris')
+
+# fetch a File object
+File( full_path = firis$full_path)
+firis
+
+```
+
+## Files Listing
+
+Works as vaults and folders using the same criteria for filtering and the same fetch_next, 
+fetch_all functions.
+
+```{r files-2}
+all_files <- as.data.frame(Files())
+
+Files(limit = 3)
+
+Files(regex = 'TCG*')
+
+Files(regex = 'TCG*')
+
+Files(vault_id = v)
+
+```
+
+## Files  Move
+
+```{r files-3}
+
+f1 <- Folder_create(vault_id=v, '/data/iris/v2')
+firis_v2 <- Object_update(firis, parent_object_id = f1$id)
+
+```
+
+
+
+
+# Datasets
+
+Works as vaults, folders and files using the same criteria for filtering and the same fetch_next, 
+fetch_all functions.
+
+
+## Create and Import from a data.frame
+
+```{r dataset-1}
+iris_2 <- Dataset_create(v, 'iris_2.ds')
+iris_2$full_path
+iris_2$object_type
+
+import_res <- Dataset_import(iris_2, df = iris[1:2, ], sync = TRUE)
+iris_2 <- Dataset(vault_id = v, path = iris_2$path)
+Dataset_query(iris_2)
+
+```
+
+## Create and Import from a record lists
+
+```{r dataset-2}
+genes_1 <- Dataset_create(v, 'genes.ds', 
+  description = "genes hits",
+  metadata = list(DEV = TRUE), 
+  tags = list("QBP", "EDP"), 
+  storage_class = "Temporary", capacity = "small")
+
+records <- list(
+  list(gene = "CFTR", importance = 1, sample_count = 2104),
+  list(gene = "BRCA2", importance = 1, sample_count = 1391),
+  list(gene = "CLIC2", importance = 5, sample_count = 14)
+)
+import_res <- Dataset_import(genes_1, records = records, sync = TRUE)
+
+g1 <- Dataset_query(genes_1, limit = 1)
+fetch_all(g1)
+```
 
 

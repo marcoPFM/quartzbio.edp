@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ---- include = FALSE, echo = FALSE, message =  FALSE, warning=FALSE----------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -6,11 +6,17 @@ knitr::opts_chunk$set(
 
 ## -----------------------------------------------------------------------------
 library(quartzbio.edp)
+# select an EDP instance using a profile
 Sys.getenv('EDP_PROFILE')
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
 Sys.getenv('EDP_PROFILE')
-get_connection()
+u <- User()
+u$first_name
+u$last_name
+u$full_name
+u$id
+u$email
+u$account$name
+u$url
 
-## ---- include = FALSE, echp = FALSE, message = FALSE,warning = FALSE----------
-Sys.unsetenv('EDP_PROFILE')
 

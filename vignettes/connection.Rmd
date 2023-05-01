@@ -1,15 +1,17 @@
 ---
 title: "Connection to an EDP host"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    toc: true
 description: |
   describe connections methods available
 vignette: >
-  %\VignetteIndexEntry{connection}
+  %\VignetteIndexEntry{Connection to an EDP host}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, include = FALSE, echo = FALSE, message =  FALSE, warning=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -161,10 +163,4 @@ set_connection(NULL, check = FALSE)
 User()
 User(conn_corp)
 
-```
-
-<!-- unset system env to avoid side effects between vignettes -->
-
-```{r, include = FALSE, echp = FALSE, message = FALSE,warning = FALSE }
-Sys.unsetenv('EDP_PROFILE')
 ```

@@ -41,13 +41,20 @@ list:
 
 # package has to be installed
 
-PREVIEW=TRUE
+
 ######## functions #######################
-.PHONY: never info
+.PHONY: vignettes never info
+PREVIEW=TRUE
+QUIET=FALSE
 R=R
 RSCRIPT=Rscript
 r_exec=$(RSCRIPT) --no-save -e '$(1)'
 HTMLVIEWER=xdg-open
+
+# hack rule to prevent previewing documents
+disable_preview:
+	$(eval PREVIEW=)
+
 
 # rmd -> html: keep default render/output
 rmd=$(call r_exec, rmarkdown::render("$(1)", quiet = $(QUIET)))
@@ -56,8 +63,18 @@ rmd=$(call r_exec, rmarkdown::render("$(1)", quiet = $(QUIET)))
 %.html: %.Rmd never
 	@echo '======== rendering' $$(basename $<) '==>' $$(basename $@) in $$(dirname $@) '====================='
 	@$(call rmd,$<)
-	@if [ -n "$(PREVIEW)" ]; then $(HTMLVIEWER) $@; fi 	# run the viewer iff PREVIEW is not empty 
+	@if [ -n "$(PREVIEW)" ]; then $(HTMLVIEWER) $@; fi 	# run the viewer if PREVIEW is not empty 
 
 
 VIGNETTES_RMD_HTML=$(subst Rmd,html,$(wildcard vignettes/[^_]*.Rmd))
 $(VIGNETTES_RMD_HTML):
+
+# this is needed because R CMD build --vignettes and devtools::build_vignettes() render all
+# the vignettes withim the same R session
+# did not find a way to unset the environment variables in between each call to the rendering
+vignettes:
+	cd vignettes; \
+	R CMD Sweave connection.Rmd ; \
+	R CMD Sweave vaults_and_objects.Rmd ;\
+	cp *.* ../doc/ ;\
+	cd ..
