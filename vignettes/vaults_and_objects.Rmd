@@ -217,7 +217,7 @@ Files(vault_id = v)
 
 ```
 
-## Files  Move
+## Files Move
 
 ```{r files-3}
 
@@ -226,6 +226,26 @@ firis_v2 <- Object_update(firis, parent_object_id = f1$id)
 
 ```
 
+## Files Querying
+
+Columns, Rows of objects that are tabular can be obtained
+
+```{r files-4}
+# fetch the two first rows
+f2r <- File_query(firis_v2, limit=2)
+
+# fetch the two next ones
+fetch_next(f2r)
+
+# fetch row 8
+File_query(firis_v2, limit=1,  offset=7)
+iris[8,]
+
+# fetch all Setosa 
+File_query(firis_v2, filters= filters('Species contains "setosa"'))
+File_query(firis_v2, filters= filters('Sepal.Length = 4.7'))
+
+```
 
 
 
@@ -244,7 +264,6 @@ iris_2$object_type
 
 import_res <- Dataset_import(iris_2, df = iris[1:2, ], sync = TRUE)
 iris_2 <- Dataset(vault_id = v, path = iris_2$path)
-Dataset_query(iris_2)
 
 ```
 
@@ -269,3 +288,35 @@ fetch_all(g1)
 ```
 
 
+## Dataset Querying
+
+
+
+```{r dataset-3}
+# fetch the first row
+f1r_ds <- Dataset_query(iris_2, limit=1)
+
+fetch_next(f1r_ds)
+
+fetch_all(f1r_ds)
+
+# Filters acts on column fields that matches the data.frame import.
+Dataset_query(iris_2, filters= filters('Species contains "setosa"'))
+
+Dataset_query(iris_2, filters= filters('Sepal.Length >= 5.1'))
+
+Dataset_query(iris_2, filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Keep fields
+Dataset_query(iris_2, 
+  fields = c('Petal.Width', 'Species'),
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Exclude fields
+Dataset_query(iris_2, 
+  exclude_fields = c('Petal.Width', 'Species'),
+  
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+
+```
