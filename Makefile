@@ -78,5 +78,10 @@ vignettes:
 	R CMD Sweave vaults_and_objects.Rmd ;\
 	R CMD Sweave Datasets.Rmd ;\
 	R CMD Sweave Files.Rmd ;\
+	R CMD Sweave Parallelisation.Rmd ;\
+	
 	cp *.* ../doc/ ;\
 	cd ..
+
+build_vignettes:
+	@$(call r_exec, devtools:::build_vignettes( install = FALSE, quiet = ${QUIET}))

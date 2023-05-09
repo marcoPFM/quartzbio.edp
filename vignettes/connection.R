@@ -3,7 +3,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-Sys.unsetenv('EDP_PROFILE')
+withr:::defer({Sys.unsetenv('EDP_PROFILE')}, parent.frame(n=2))
 
 ## -----------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@ das[[1]]
 
 
 ## -----------------------------------------------------------------------------
-library(quartzbio.edp)
+
 # use the default profile  on host https://api.solvebio.com
 conn <- connect_with_profile()
 User(conn)

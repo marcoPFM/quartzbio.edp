@@ -16,12 +16,12 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-Sys.unsetenv('EDP_PROFILE')
+withr:::defer({Sys.unsetenv('EDP_PROFILE')}, parent.frame(n=2))
 ```
 
 # TL;DR
 
-```{r, tltr}
+```{r tltr}
 library(quartzbio.edp)
 Sys.getenv('EDP_PROFILE')
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
@@ -63,7 +63,7 @@ u$url
 
 # Vaults
 
-```{r, vaults-0}
+```{r vaults-0}
 library(quartzbio.edp)
 # select an EDP instance using a profile
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
@@ -178,7 +178,7 @@ delete(v1)
 
 ## Upload and Download
 
-```{r files-1}
+```{r obj-1}
 irisp <- file.path(tempdir(), 'iris.csv')
 write.csv(iris[1:10,], irisp)
 
@@ -208,7 +208,7 @@ firis
 Works as vaults and folders using the same criteria for filtering and the same fetch_next, 
 fetch_all functions.
 
-```{r files-2}
+```{r obj-2}
 all_files <- as.data.frame(Files())
 
 Files(limit = 3)
@@ -223,7 +223,7 @@ Files(vault_id = v)
 
 ## Files Move
 
-```{r files-3}
+```{r obj-3}
 # move file from v1/ to v2/
 f1 <- Folder_create(vault_id=v, '/data/iris/v2')
 firis_v2 <- Object_update(firis, parent_object_id = f1$id)
@@ -234,7 +234,7 @@ firis_v2
 
 Columns, Rows of objects that are tabular can be obtained
 
-```{r files-4}
+```{r obj-4}
 # fetch the two first rows
 f2r <- File_query(firis_v2, limit=2)
 

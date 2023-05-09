@@ -3,9 +3,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-Sys.unsetenv('EDP_PROFILE')
+withr:::defer({Sys.unsetenv('EDP_PROFILE')}, parent.frame(n=2))
 
-## ---- tltr--------------------------------------------------------------------
+## ----tltr---------------------------------------------------------------------
 library(quartzbio.edp)
 Sys.getenv('EDP_PROFILE')
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
@@ -38,7 +38,7 @@ u$account$name
 u$url
 
 
-## ---- vaults-0----------------------------------------------------------------
+## ----vaults-0-----------------------------------------------------------------
 library(quartzbio.edp)
 # select an EDP instance using a profile
 Sys.setenv(EDP_PROFILE = 'vsim-dev_rw')
@@ -132,4 +132,62 @@ Folder(vault_id = v1, path = 'data')
 # fetch a folder with its full.path
 Folder(full_path = fdata$full_path)
 delete(v1)
+
+## ----obj-1--------------------------------------------------------------------
+irisp <- file.path(tempdir(), 'iris.csv')
+write.csv(iris[1:10,], irisp)
+
+v <- Vault_create('_iris_upload',  description = 'upload', 
+  tags = list('iris', 'can_be_removed'))
+
+vpath <- 'data/iris/v1/iris_10.csv'
+
+# File upload: folder hierarchy is created on the fly
+firis <- File_upload(v, irisp, vpath )
+firis$full_path
+firis$path
+firis$md5
+
+# File download
+File_download(firis, file.path(dirname(irisp), 'iris_10_download.csv')) 
+dir(dirname(irisp), 'iris')
+
+# fetch a File object
+File( full_path = firis$full_path)
+firis
+
+
+## ----obj-2--------------------------------------------------------------------
+all_files <- as.data.frame(Files())
+
+Files(limit = 3)
+
+Files(regex = 'TCG*')
+
+Files(regex = 'TCG*')
+
+Files(vault_id = v)
+
+
+## ----obj-3--------------------------------------------------------------------
+# move file from v1/ to v2/
+f1 <- Folder_create(vault_id=v, '/data/iris/v2')
+firis_v2 <- Object_update(firis, parent_object_id = f1$id)
+firis_v2
+
+## ----obj-4--------------------------------------------------------------------
+# fetch the two first rows
+f2r <- File_query(firis_v2, limit=2)
+
+# fetch the two next ones
+fetch_next(f2r)
+
+# fetch row 8
+File_query(firis_v2, limit=1,  offset=7)
+iris[8,]
+
+# fetch all Setosa 
+File_query(firis_v2, filters= filters('Species contains "setosa"'))
+File_query(firis_v2, filters= filters('Sepal.Length = 4.7'))
+delete(v)
 

@@ -6,7 +6,7 @@ output:
 description: |
   Files Uploads.
 vignette: >
-  %\VignetteIndexEntry{Datasets}
+  %\VignetteIndexEntry{Files}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,15 +16,16 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-Sys.unsetenv('EDP_PROFILE')
+withr:::defer({Sys.unsetenv('EDP_PROFILE')}, parent.frame(n=2))
 ```
 
 # Uploads
 
 ## CSV
 
-```{r csv}
+```{r files-1}
 library(quartzbio.edp)
+library(dplyr)
 Sys.setenv(EDP_PROFILE = "vsim-dev_rw")
 v <- Vault_create('_vignettes',  description = 'quartzbio.edp vignettes',  tags = list('please_removed'))
 src_dir <- Folder_create(vault_id = v, 'src')
@@ -45,7 +46,7 @@ File_query(fi, filters= filters('Sepal.Width contains ".4"'))
 ## JSON
 
 
-```{r json}
+```{r files-2}
 irisj <- file.path(tempdir(), 'iris.json')
 jsonlite::write_json(iris[1:10, ], irisj) 
 
@@ -64,7 +65,7 @@ fi2$mimetype
 ```
 # Downloads
 
-```{r down-csv2}
+```{r files-3}
 lp <- file.path(tempdir(), 'iris_down.csv')
 File_download(fi,lp)
 read.csv(lp, ) %>% head(2)
