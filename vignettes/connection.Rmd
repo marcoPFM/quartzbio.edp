@@ -16,9 +16,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+Sys.unsetenv('EDP_PROFILE')
 ```
 
-# TLTR
+# TL;DR
 
 Save into the  **~/.qb/edp.json**  files, different EDP configuration profiles.  
 The **default** profile is used automatically in functions if no connection are specified in arguments.
@@ -37,9 +38,22 @@ The **default** profile is used automatically in functions if no connection are 
 ```
 
 ```{r}
+
+# by default all functions will use the default profile set in the default config file
 library(quartzbio.edp)
 User()
-Vaults()
+vlst <- Vaults()
+vlst[[1]]
+
+flds <- Folders()
+flds[[1]]
+
+fis  <- Files()
+fis[[1]]
+
+das  <-Datasets()
+das[[1]]
+
 ```
 
 # Introduction
@@ -140,6 +154,9 @@ will use autoconnect() to obtain it and sets as the current one.
 
 
 ```{r}
+# explicitely set the connection with a profile
+set_connection( connect_with_profile('demo-corp'))
+
 # remove the current connection
 set_connection(NULL, check = FALSE)
 
@@ -154,7 +171,7 @@ conn_corp <- connect_with_profile('demo-corp')
 User(conn_corp)
 User()
 
- Sys.setenv(EDP_PROFILE = 'demo-corp')
+Sys.setenv(EDP_PROFILE = 'demo-corp')
 
 # remove the current connection
 set_connection(NULL, check = FALSE)

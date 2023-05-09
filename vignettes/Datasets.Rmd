@@ -1,0 +1,153 @@
+---
+title: "Datasets"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+description: |
+  Datasets creation, transformation and filtering.
+vignette: >
+  %\VignetteIndexEntry{Datasets}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE, echo = FALSE, message =  FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+Sys.unsetenv('EDP_PROFILE')
+```
+
+# TL;DR
+
+```{r tltr_1}
+library(quartzbio.edp)
+Sys.setenv(EDP_PROFILE = "vsim-dev_rw")
+v <- Vault_create('_vignettes',  description = 'quartzbio.edp vignettes',  tags = list('please_removed'))
+src_dir <- Folder_create(vault_id = v, 'src') 
+datasets_dir <- Folder_create(vault_id = v, 'datasets')
+
+```
+
+
+# Datasets
+
+Works as vaults, folders and files using the same criteria for filtering and the same fetch_next, 
+fetch_all functions.
+
+## Create and Import from an uploaded file
+
+```{r upload}
+irisp <- file.path(tempdir(), 'iris.csv')
+write.csv(iris[1:10,], irisp)
+vpath <- 'data/iris/v1/iris_10.csv'
+firis <- File_upload(v, irisp, vpath )
+File_query(firis)
+
+# templating is mandatory
+iris10_ds <- Dataset_create(v, 'iris_10.ds')
+
+#fields <- quartzbio.edp:::infer_fields_from_df(iris)
+fields <- list(Sepal.Length = list(name = "Sepal.Length", title = "Sepal.Length", 
+    data_type = "double", description = NULL, ordering = 0), 
+    Sepal.Width = list(name = "Sepal.Width", title = "Sepal.Width", 
+        data_type = "double", description = NULL, ordering = 1), 
+    Petal.Length = list(name = "Petal.Length", title = "Petal.Length", 
+        data_type = "double", description = NULL, ordering = 2), 
+    Petal.Width = list(name = "Petal.Width", title = "Petal.Width", 
+        data_type = "double", description = NULL, ordering = 3), 
+    Species = list(name = "Species", title = "Species", data_type = "string", 
+        description = NULL, ordering = 4))
+
+
+# does not work
+# imp1 <- Dataset_import(iris10_ds, 
+#   object_id = firis$id,
+#   target_fields = fields,
+#   sync = TRUE)
+
+
+imp <- DatasetImport.create(dataset_id = iris10_ds$id,
+                            object_id = firis$id,
+                            target_fields = fields )
+Dataset.activity(iris10_ds$id)
+
+a10 <- Dataset_query(iris10_ds, limit= 2) # it's an append
+a10
+fetch_all(a10)
+fetch_next(a10)
+Dataset_query(iris10_ds)
+
+```
+
+
+## Create and Import from a data.frame
+
+```{r dataset-1}
+iris_2 <- Dataset_create(v, 'iris_2.ds')
+iris_2$full_path
+iris_2$object_type
+
+import_res <- Dataset_import(iris_2, df = iris[1:2, ], sync = TRUE)
+iris_2 <- Dataset(vault_id = v, path = iris_2$path)
+
+```
+
+## Create and Import from a record lists
+
+```{r dataset-2}
+genes_1 <- Dataset_create(v, 'genes.ds', 
+  description = "genes hits",
+  metadata = list(DEV = TRUE), 
+  tags = list("QBP", "EDP"), 
+  storage_class = "Temporary", capacity = "small")
+
+records <- list(
+  list(gene = "CFTR", importance = 1, sample_count = 2104),
+  list(gene = "BRCA2", importance = 1, sample_count = 1391),
+  list(gene = "CLIC2", importance = 5, sample_count = 14)
+)
+import_res <- Dataset_import(genes_1, records = records, sync = TRUE)
+
+g1 <- Dataset_query(genes_1, limit = 1)
+fetch_all(g1)
+```
+
+
+## Dataset Querying
+
+```{r dataset-3}
+# fetch the first row
+f1r_ds <- Dataset_query(iris_2, limit=1)
+
+fetch_next(f1r_ds)
+
+fetch_all(f1r_ds)
+
+# Filters acts on column fields that matches the data.frame import.
+Dataset_query(iris_2, filters= filters('Species contains "setosa"'))
+
+Dataset_query(iris_2, filters= filters('Sepal.Length >= 5.1'))
+
+Dataset_query(iris_2, filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Keep fields
+Dataset_query(iris_2, 
+  fields = c('Petal.Width', 'Species'),
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Exclude fields
+Dataset_query(iris_2, 
+  exclude_fields = c('Petal.Width', 'Species'),
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Ordering
+Dataset_query(iris_2, 
+   ordering = 'Sepal.Length')
+
+delete(v)
+```
+  
+
+

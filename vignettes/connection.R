@@ -3,11 +3,25 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+Sys.unsetenv('EDP_PROFILE')
 
 ## -----------------------------------------------------------------------------
+
+# by default all functions will use the default profile set in the default config file
 library(quartzbio.edp)
 User()
-Vaults()
+vlst <- Vaults()
+vlst[[1]]
+
+flds <- Folders()
+flds[[1]]
+
+fis  <- Files()
+fis[[1]]
+
+das  <-Datasets()
+das[[1]]
+
 
 ## -----------------------------------------------------------------------------
 library(quartzbio.edp)
@@ -50,6 +64,9 @@ User(conn=conn)
 
 
 ## -----------------------------------------------------------------------------
+# explicitely set the connection with a profile
+set_connection( connect_with_profile('demo-corp'))
+
 # remove the current connection
 set_connection(NULL, check = FALSE)
 
@@ -64,7 +81,7 @@ conn_corp <- connect_with_profile('demo-corp')
 User(conn_corp)
 User()
 
- Sys.setenv(EDP_PROFILE = 'demo-corp')
+Sys.setenv(EDP_PROFILE = 'demo-corp')
 
 # remove the current connection
 set_connection(NULL, check = FALSE)

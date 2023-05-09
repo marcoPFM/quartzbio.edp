@@ -4,7 +4,7 @@ output:
   rmarkdown::html_vignette:
     toc: true
 description: |
-  describe Vaults, Files, Datasets and other EDP objects.
+  Describe Vaults, Folders, Files, Datasets objects and functions.
 vignette: >
   %\VignetteIndexEntry{Vaults, Files, Datasets and Objects}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,9 +16,10 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+Sys.unsetenv('EDP_PROFILE')
 ```
 
-# TLTR
+# TL;DR
 
 ```{r, tltr}
 library(quartzbio.edp)
@@ -180,7 +181,10 @@ delete(v1)
 ```{r files-1}
 irisp <- file.path(tempdir(), 'iris.csv')
 write.csv(iris[1:10,], irisp)
-v <- Vault_create('_iris_upload',  description = 'upload', tags = list('iris', 'can_be_removed'))
+
+v <- Vault_create('_iris_upload',  description = 'upload', 
+  tags = list('iris', 'can_be_removed'))
+
 vpath <- 'data/iris/v1/iris_10.csv'
 
 # File upload: folder hierarchy is created on the fly
@@ -220,10 +224,10 @@ Files(vault_id = v)
 ## Files Move
 
 ```{r files-3}
-
+# move file from v1/ to v2/
 f1 <- Folder_create(vault_id=v, '/data/iris/v2')
 firis_v2 <- Object_update(firis, parent_object_id = f1$id)
-
+firis_v2
 ```
 
 ## Files Querying
@@ -244,79 +248,7 @@ iris[8,]
 # fetch all Setosa 
 File_query(firis_v2, filters= filters('Species contains "setosa"'))
 File_query(firis_v2, filters= filters('Sepal.Length = 4.7'))
-
+delete(v)
 ```
 
 
-
-# Datasets
-
-Works as vaults, folders and files using the same criteria for filtering and the same fetch_next, 
-fetch_all functions.
-
-
-## Create and Import from a data.frame
-
-```{r dataset-1}
-iris_2 <- Dataset_create(v, 'iris_2.ds')
-iris_2$full_path
-iris_2$object_type
-
-import_res <- Dataset_import(iris_2, df = iris[1:2, ], sync = TRUE)
-iris_2 <- Dataset(vault_id = v, path = iris_2$path)
-
-```
-
-## Create and Import from a record lists
-
-```{r dataset-2}
-genes_1 <- Dataset_create(v, 'genes.ds', 
-  description = "genes hits",
-  metadata = list(DEV = TRUE), 
-  tags = list("QBP", "EDP"), 
-  storage_class = "Temporary", capacity = "small")
-
-records <- list(
-  list(gene = "CFTR", importance = 1, sample_count = 2104),
-  list(gene = "BRCA2", importance = 1, sample_count = 1391),
-  list(gene = "CLIC2", importance = 5, sample_count = 14)
-)
-import_res <- Dataset_import(genes_1, records = records, sync = TRUE)
-
-g1 <- Dataset_query(genes_1, limit = 1)
-fetch_all(g1)
-```
-
-
-## Dataset Querying
-
-
-
-```{r dataset-3}
-# fetch the first row
-f1r_ds <- Dataset_query(iris_2, limit=1)
-
-fetch_next(f1r_ds)
-
-fetch_all(f1r_ds)
-
-# Filters acts on column fields that matches the data.frame import.
-Dataset_query(iris_2, filters= filters('Species contains "setosa"'))
-
-Dataset_query(iris_2, filters= filters('Sepal.Length >= 5.1'))
-
-Dataset_query(iris_2, filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
-
-# Keep fields
-Dataset_query(iris_2, 
-  fields = c('Petal.Width', 'Species'),
-  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
-
-# Exclude fields
-Dataset_query(iris_2, 
-  exclude_fields = c('Petal.Width', 'Species'),
-  
-  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
-
-
-```
