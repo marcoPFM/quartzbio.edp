@@ -21,8 +21,8 @@ withr:::defer({Sys.unsetenv('EDP_PROFILE')}, parent.frame(n=2))
 
 # Implementation
 
-* Implemented using R (future)[https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html] package.
-
+* Implemented using [R future package](https://cran.r-project.org/web/packages/future/vignettes/future-1-overview.html)
+ package.
 
 # First read part of data
 

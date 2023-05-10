@@ -76,8 +76,6 @@ vignettes:
 	cd vignettes; \
 	R CMD Sweave connection.Rmd ; \
 	R CMD Sweave vaults_and_objects.Rmd ;\
-	R CMD Sweave Datasets.Rmd ;\
-	R CMD Sweave Files.Rmd ;\
 	R CMD Sweave Parallelisation.Rmd ;\
 	
 	cp *.* ../doc/ ;\

@@ -189,5 +189,93 @@ iris[8,]
 # fetch all Setosa 
 File_query(firis_v2, filters= filters('Species contains "setosa"'))
 File_query(firis_v2, filters= filters('Sepal.Length = 4.7'))
+
+## ----ds-2---------------------------------------------------------------------
+iris_2 <- Dataset_create(v, 'iris_2.ds')
+iris_2$full_path
+iris_2$object_type
+
+import_res <- Dataset_import(iris_2, df = iris[1:12, ], sync = TRUE)
+iris_2 <- Dataset(vault_id = v, path = iris_2$path)
+i2 <- Dataset_query(iris_2, limit = 1)
+fetch_next(i2)
+
+
+## ----ds-3---------------------------------------------------------------------
+genes_1 <- Dataset_create(v, 'genes.ds', 
+  description = "genes hits",
+  metadata = list(DEV = TRUE), 
+  tags = list("QBP", "EDP"), 
+  storage_class = "Temporary", capacity = "small")
+
+records <- list(
+  list(gene = "CFTR", importance = 1, sample_count = 2104),
+  list(gene = "BRCA2", importance = 1, sample_count = 1391),
+  list(gene = "CLIC2", importance = 5, sample_count = 14)
+)
+
+import_res <- Dataset_import(genes_1, records = records, sync = TRUE)
+g1 <- Dataset_query(genes_1, limit = 1)
+g1
+fetch_all(g1)
+Dataset_query(genes_1, filters = filters('sample_count <= 14'))
+
+
+## ----ds-4---------------------------------------------------------------------
+nobs <- Dataset_create(v, 'dna_gurus.ds')
+authors <- list(
+    list(name='Francis Crick'),
+    list(name='James Watson'),
+    list(name='Rosalind Franklin')
+)
+# additional firt and last name fields to be created
+target_fields <- list(
+  list(
+    name="first_name",
+    description="Adds a first name column based on name column",
+    data_type="string",
+    expression="record.name.split(' ')[0]"
+  ),
+  list(
+    name="last_name",
+    description="Adds a last name column based on name column",
+    data_type="string",
+    expression="record.name.split(' ')[-1]"
+  )
+)
+res <- Dataset_import(nobs, records = authors, 
+  target_fields = target_fields, 
+  sync = TRUE)
+Dataset_query(nobs)
+
+## ----ds-5---------------------------------------------------------------------
+# fetch the first row
+f1r_ds <- Dataset_query(iris_2, limit=1)
+
+fetch_next(f1r_ds)
+
+fetch_all(f1r_ds)
+
+# Filters acts on column fields that matches the data.frame import.
+Dataset_query(iris_2, filters= filters('Species contains "setosa"'))
+
+Dataset_query(iris_2, filters= filters('Sepal.Length >= 5.1'))
+
+Dataset_query(iris_2, filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Keep fields
+Dataset_query(iris_2, 
+  fields = c('Petal.Width', 'Species'),
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Exclude fields
+Dataset_query(iris_2, 
+  exclude_fields = c('Petal.Width', 'Species'),
+  filters= filters('(Sepal.Length >= 5.1) OR  (Sepal.Width <= 3.0)'))
+
+# Ordering
+Dataset_query(iris_2, 
+   ordering = 'Sepal.Length')
+
 delete(v)
 
