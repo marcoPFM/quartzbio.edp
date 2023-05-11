@@ -178,6 +178,8 @@ delete(v1)
 
 ## Upload and Download
 
+### upload CSV
+
 ```{r obj-1}
 irisp <- file.path(tempdir(), 'iris.csv')
 write.csv(iris[1:10,], irisp)
@@ -202,6 +204,32 @@ File( full_path = firis$full_path)
 firis
 
 ```
+
+### upload JSONL 
+
+The JSON Lines text format, also called newline-delimited JSON. 
+JSON Lines is a convenient format for storing structured data that may be processed one record at a time. 
+* [JSONL](https://jsonlines.org/) or [ndjson](http://ndjson.org/))  
+
+
+```{r jsonl}
+
+  # upload jsonl file
+irisj <- file.path(tempdir(), "iris.json")
+
+# stream_out function write the JSONL format to a connection
+jsonlite:::stream_out(iris[1:15, ], file(irisj))
+
+vpath <- "v1/iris_10.json"
+fi2 <- File_upload(v, irisj, vpath)
+fi2$path
+fi2$mimetype
+
+File_query(fi2)
+File_query(fi2, filters = filters("Sepal.Length >= 5"))
+
+```
+
 
 ## Files Listing
 
