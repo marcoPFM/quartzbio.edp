@@ -1,12 +1,12 @@
 ---
-title: "Connection to an EDP host"
+title: "Connection to EDP hosts"
 output:
   rmarkdown::html_vignette:
     toc: true
 description: |
   describe connections methods available
 vignette: >
-  %\VignetteIndexEntry{Connection to an EDP host}
+  %\VignetteIndexEntry{Connection to EDP hosts}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
