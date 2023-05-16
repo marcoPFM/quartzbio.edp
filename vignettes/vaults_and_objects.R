@@ -157,6 +157,23 @@ File( full_path = firis$full_path)
 firis
 
 
+## ----jsonl--------------------------------------------------------------------
+
+  # upload jsonl file
+irisj <- file.path(tempdir(), "iris.json")
+
+# stream_out function write the JSONL format to a connection
+jsonlite:::stream_out(iris[1:15, ], file(irisj))
+
+vpath <- "v1/iris_10.json"
+fi2 <- File_upload(v, irisj, vpath)
+fi2$path
+fi2$mimetype
+
+File_query(fi2)
+File_query(fi2, filters = filters("Sepal.Length >= 5"))
+
+
 ## ----obj-2--------------------------------------------------------------------
 all_files <- as.data.frame(Files())
 

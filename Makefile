@@ -78,7 +78,7 @@ vignettes:
 	R CMD Sweave vaults_and_objects.Rmd ;\
 	R CMD Sweave Parallelisation.Rmd ;\
 	
-	cp *.* ../doc/ ;\
+	cp *.Rmd *.R *.html ../doc ;\
 	cd ..
 
 build_vignettes:
