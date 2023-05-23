@@ -43,7 +43,7 @@ list:
 
 
 ######## functions #######################
-.PHONY: vignettes never info
+.PHONY: _vignettes never info
 PREVIEW=TRUE
 QUIET=FALSE
 R=R
@@ -66,20 +66,18 @@ rmd=$(call r_exec, rmarkdown::render("$(1)", quiet = $(QUIET)))
 	@if [ -n "$(PREVIEW)" ]; then $(HTMLVIEWER) $@; fi 	# run the viewer if PREVIEW is not empty 
 
 
-VIGNETTES_RMD_HTML=$(subst Rmd,html,$(wildcard vignettes/[^_]*.Rmd))
+VIGNETTES_RMD_HTML=$(subst Rmd,html,$(wildcard _vignettes/[^_]*.Rmd))
 $(VIGNETTES_RMD_HTML):
 
 # this is needed because R CMD build --vignettes and devtools::build_vignettes() render all
 # the vignettes withim the same R session
+# in qbdev there is no yet the option to not build vignettes
 # did not find a way to unset the environment variables in between each call to the rendering
-vignettes:
-	cd vignettes; \
+_vignettes:
+	cd _vignettes; \
 	R CMD Sweave connection.Rmd ; \
 	R CMD Sweave vaults_and_objects.Rmd ;\
-	R CMD Sweave Parallelisation.Rmd ;\
-	
-	cp *.Rmd *.R *.html ../doc ;\
+	#R CMD Sweave Parallelisation.Rmd ;\
+	mkdir -p ../docs ;\
+	cp *.Rmd *.R *.html ../docs ;\
 	cd ..
-
-build_vignettes:
-	@$(call r_exec, devtools:::build_vignettes( install = FALSE, quiet = ${QUIET}))
