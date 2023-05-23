@@ -38,6 +38,9 @@ ds$documents_count
 COLS <- c("ensp", "variant_class")
 df0 <- Dataset_query(ds, limit = 10000, meta = FALSE)
 
+
+
+
 # fetch first 10000 rows
 FILTER <- filters('variant_classification = "Silent"')
 system.time(df1 <- Dataset_query(ds, fields = COLS, filters = FILTER, 
