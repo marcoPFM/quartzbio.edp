@@ -1,12 +1,9 @@
 pandoc: 2.17.1.1
 pkgdown: 2.0.1
 pkgdown_sha: ~
-articles:
-  Parallelisation: Parallelisation.html
-  connection: connection.html
-  vaults_and_objects: vaults_and_objects.html
-last_built: 2023-05-25T07:49Z
+articles: {}
+last_built: 2023-05-25T16:32Z
 urls:
-  reference: https://quartzbio.github.io/quartzbio.edp/reference
-  article: https://quartzbio.github.io/quartzbio.edp/articles
+  reference: https://marcopfm.github.io/quartzbio.edp/reference
+  article: https://marcopfm.github.io/quartzbio.edp/articles
 
